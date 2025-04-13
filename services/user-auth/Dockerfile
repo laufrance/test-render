@@ -1,32 +1,29 @@
 # Use an official Python runtime as a parent image
-FROM python:3.10-slim
+FROM python:3.13-slim
 
 # Set the working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+# Copy the current directory contents into the container
+COPY . /app
 
-# Copy requirements first to leverage Docker cache
+# Install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the rest of the application
-COPY . .
 
 # Create directory for SSL certificates
 RUN mkdir -p /etc/ssl/certs
 
-# Set environment variables
-ENV PYTHONPATH=/app
-ENV PGSSLMODE=require
+# Copy script entrypoint into the container
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Expose the port that FastAPI will run on
 EXPOSE $PORT
 
-ENTRYPOINT ["/entrypoint.sh"]
+# Establecer la variable de entorno PYTHONPATH para que pytest encuentre el módulo app
+ENV PYTHONPATH=/app
+ENV PGSSLMODE=require
 
-# Command to run the application
-CMD gunicorn app.main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+# Ejecutar el script de entrada cuando el contenedor se inicie
+ENTRYPOINT ["/entrypoint.sh"]
