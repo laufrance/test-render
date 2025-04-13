@@ -26,5 +26,7 @@ ENV PGSSLMODE=require
 # Expose the port that FastAPI will run on
 EXPOSE $PORT
 
+ENTRYPOINT ["/entrypoint.sh"]
+
 # Command to run the application
 CMD gunicorn app.main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
