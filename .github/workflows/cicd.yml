@@ -135,48 +135,7 @@ jobs:
           path: services/user-auth/htmlcov/
           retention-days: 1
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
-          verbose: true
-
       - name: Stop Docker services
         run: |
           cd $GITHUB_WORKSPACE/services/user-auth
           docker-compose down
-
-  deploy-coverage:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download coverage report
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-report
-          path: services/user-auth/htmlcov
-
-      - name: Checkout GitHub Pages
-        uses: actions/checkout@v4
-        with:
-          repository: memo2-2025-1c-group9/memo2-2025-1c-group9.github.io
-          token: ${{ secrets.GH_PAT }}
-          path: pages
-
-      - name: Update coverage report
-        run: |
-          mkdir -p pages/coverages/user-auth
-          cp -r services/user-auth/htmlcov/* pages/coverages/user-auth/
-
-      - name: Commit and push changes
-        working-directory: pages
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-          git add .
-          git commit -m "Update coverage report for user-auth service"
-          git push
